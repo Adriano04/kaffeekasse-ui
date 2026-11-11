@@ -1,0 +1,1 @@
+import {aB as wv}from'./main-OT6QWJKK.js';var o={positive:"ok",negative:"crit",neutral:"neutral",warning:"warn"},n=class t{transform(e,r){return `${r}--${o[e]}`}static \u0275fac=function(r){return new(r||t)};static \u0275pipe=wv({name:"statusClass",type:t,pure:true})};export{n};

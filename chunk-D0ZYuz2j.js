@@ -1,0 +1,1 @@
+import {E,N}from'./chunk-CHkD6ArS.js';import {C as U,D as $}from'./main-OT6QWJKK.js';function a(t){return t<0?{text:E(t),tone:"negative"}:t>0?{text:N(t),tone:"positive"}:{text:E(0),tone:"neutral"}}function l(t){let r=t<0?"offen":t>0?"Guthaben":"ausgeglichen";return U($({},a(t)),{hint:r})}export{a,l};
