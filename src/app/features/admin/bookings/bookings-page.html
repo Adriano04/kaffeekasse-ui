@@ -1,0 +1,341 @@
+<div class="admin-page">
+  <section class="rs-card" aria-labelledby="bookings-record-title">
+    <header class="rs-card__header">
+      <h2 class="rs-card__title" id="bookings-record-title">Buchung erfassen</h2>
+    </header>
+    <div class="admin-page__variants" role="group" aria-label="Art der Buchung">
+      <rs-tabs
+        [items]="vm.variantLabels"
+        [activeIndex]="vm.variantIndex()"
+        (activeIndexChange)="vm.selectVariant($event)"
+      />
+    </div>
+
+    @switch (vm.activeVariant()) {
+      @case ('PAYMENT') {
+        <form class="admin-form" [formRoot]="vm.paymentForm">
+          <div class="rs-card__body admin-form__fields">
+            <app-labeled-field
+              fieldId="payment-person"
+              label="Person"
+              [state]="vm.paymentForm.personId()"
+            >
+              <div class="rs-select-wrap rs-select-wrap--block">
+                <select
+                  id="payment-person"
+                  class="rs-select"
+                  aria-describedby="payment-person-hint"
+                  [formField]="vm.paymentForm.personId"
+                >
+                  <option value="">Bitte wählen</option>
+                  @for (option of vm.personOptions(); track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+            </app-labeled-field>
+            <app-labeled-field
+              fieldId="payment-amount"
+              label="Betrag (€)"
+              [state]="vm.paymentForm.amount()"
+            >
+              <input
+                id="payment-amount"
+                class="rs-input"
+                inputmode="decimal"
+                placeholder="10,00"
+                aria-describedby="payment-amount-hint"
+                [formField]="vm.paymentForm.amount"
+              />
+            </app-labeled-field>
+            <app-labeled-field fieldId="payment-method" label="Zahlungsweg">
+              <div class="rs-select-wrap rs-select-wrap--block">
+                <select
+                  id="payment-method"
+                  class="rs-select"
+                  [formField]="vm.paymentForm.paymentMethod"
+                >
+                  @for (option of vm.paymentMethodOptions; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+            </app-labeled-field>
+            <app-labeled-field
+              fieldId="payment-date"
+              label="Zahlungsdatum"
+              [group]="true"
+              [state]="vm.paymentForm.bookingDate()"
+            >
+              <rs-datepicker
+                [formField]="vm.paymentForm.bookingDate"
+                [maxDate]="vm.latestBookingDate()"
+              />
+            </app-labeled-field>
+            <app-labeled-field fieldId="payment-note" label="Notiz oder Verwendungszweck">
+              <input
+                id="payment-note"
+                class="rs-input"
+                placeholder="z. B. Überweisung vom 12.09."
+                [formField]="vm.paymentForm.note"
+              />
+            </app-labeled-field>
+          </div>
+          <footer class="rs-card__footer">
+            <button
+              type="submit"
+              class="rs-btn rs-btn--filled rs-btn--green"
+              [disabled]="vm.paymentForm().submitting()"
+            >
+              Einzahlung verbuchen
+            </button>
+          </footer>
+        </form>
+      }
+      @case ('ADJUSTMENT') {
+        <form class="admin-form" [formRoot]="vm.adjustmentForm">
+          <div class="rs-card__body admin-form__fields">
+            <app-labeled-field
+              fieldId="adjustment-person"
+              label="Person"
+              [state]="vm.adjustmentForm.personId()"
+            >
+              <div class="rs-select-wrap rs-select-wrap--block">
+                <select
+                  id="adjustment-person"
+                  class="rs-select"
+                  aria-describedby="adjustment-person-hint"
+                  [formField]="vm.adjustmentForm.personId"
+                >
+                  <option value="">Bitte wählen</option>
+                  @for (option of vm.personOptions(); track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+            </app-labeled-field>
+            <app-labeled-field
+              fieldId="adjustment-amount"
+              label="Betrag (€, + Gutschrift, − Belastung)"
+              [state]="vm.adjustmentForm.amount()"
+            >
+              <input
+                id="adjustment-amount"
+                class="rs-input"
+                inputmode="decimal"
+                placeholder="-1,50"
+                aria-describedby="adjustment-amount-hint"
+                [formField]="vm.adjustmentForm.amount"
+              />
+            </app-labeled-field>
+            <app-labeled-field
+              fieldId="adjustment-reason"
+              label="Begründung"
+              hint="Bezieht sich der Fehler auf eine bestimmte Buchung, storniere sie in der Gesamthistorie."
+              [state]="vm.adjustmentForm.reason()"
+            >
+              <input
+                id="adjustment-reason"
+                class="rs-input"
+                placeholder="z. B. Kulanz: Maschine hat nicht ausgegeben"
+                aria-describedby="adjustment-reason-hint"
+                [formField]="vm.adjustmentForm.reason"
+              />
+            </app-labeled-field>
+          </div>
+          <footer class="rs-card__footer">
+            <button
+              type="submit"
+              class="rs-btn rs-btn--filled rs-btn--green"
+              [disabled]="vm.adjustmentForm().submitting()"
+            >
+              Korrektur verbuchen
+            </button>
+          </footer>
+        </form>
+      }
+      @case ('PAYOUT') {
+        <form class="admin-form" [formRoot]="vm.payoutForm">
+          <div class="rs-card__body admin-form__fields">
+            <app-labeled-field
+              fieldId="payout-person"
+              label="Person"
+              [state]="vm.payoutForm.personId()"
+            >
+              <div class="rs-select-wrap rs-select-wrap--block">
+                <select
+                  id="payout-person"
+                  class="rs-select"
+                  aria-describedby="payout-person-hint"
+                  [formField]="vm.payoutForm.personId"
+                >
+                  <option value="">Bitte wählen</option>
+                  @for (option of vm.personOptions(); track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+            </app-labeled-field>
+            <app-labeled-field
+              fieldId="payout-amount"
+              label="Betrag (€)"
+              [state]="vm.payoutForm.amount()"
+              [warning]="vm.payoutWarning()"
+            >
+              <input
+                id="payout-amount"
+                class="rs-input"
+                inputmode="decimal"
+                aria-describedby="payout-amount-hint"
+                [formField]="vm.payoutForm.amount"
+              />
+            </app-labeled-field>
+            <app-labeled-field fieldId="payout-method" label="Zahlungsweg">
+              <div class="rs-select-wrap rs-select-wrap--block">
+                <select
+                  id="payout-method"
+                  class="rs-select"
+                  [formField]="vm.payoutForm.paymentMethod"
+                >
+                  @for (option of vm.paymentMethodOptions; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+            </app-labeled-field>
+            <app-labeled-field fieldId="payout-note" label="Notiz">
+              <input id="payout-note" class="rs-input" [formField]="vm.payoutForm.note" />
+            </app-labeled-field>
+          </div>
+          <footer class="rs-card__footer">
+            <button
+              type="submit"
+              class="rs-btn rs-btn--filled rs-btn--green"
+              [disabled]="vm.payoutForm().submitting()"
+            >
+              Auszahlung verbuchen
+            </button>
+          </footer>
+        </form>
+      }
+    }
+  </section>
+
+  <section class="rs-card" aria-labelledby="bookings-history-title">
+    <header class="rs-card__header">
+      <h2 class="rs-card__title" id="bookings-history-title">Gesamthistorie</h2>
+      <p class="rs-card__subtitle">Neueste zuerst. Filter mit Enter bestätigen.</p>
+    </header>
+    <rs-table
+      [fetchData]="vm.loadHistory"
+      [pageSizeOptions]="[10, 20, 50]"
+      [pageSize]="20"
+      [rowClass]="rowClass"
+      label="Gesamthistorie"
+    >
+      <rs-table-column
+        key="date"
+        header="Datum"
+        [width]="230"
+        [sortable]="true"
+        filterType="datetime-range"
+      />
+      <rs-table-column
+        key="person"
+        header="Person"
+        [flex]="1"
+        [minWidth]="140"
+        [sortable]="true"
+        filterType="custom"
+      >
+        <ng-template rsFilterDef let-value let-commit="commit">
+          <div class="rs-select-wrap rs-select-wrap--block">
+            <select class="rs-select" (change)="commit($any($event.target).value || null)">
+              <option value="" [selected]="!value">Alle</option>
+              @for (option of vm.personFilterOptions(); track option.value) {
+                <option [value]="option.value" [selected]="option.value === value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+          </div>
+        </ng-template>
+      </rs-table-column>
+      <rs-table-column
+        key="type"
+        header="Art"
+        [width]="190"
+        [sortable]="true"
+        filterType="custom"
+        wrap
+      >
+        <ng-template rsCellDef let-row>
+          <span class="rs-badge" [class]="row.typeTone | statusClass: 'rs-badge'">{{
+            row.type
+          }}</span>
+          @if (row.reversed) {
+            <span class="rs-badge rs-badge--neutral">storniert</span>
+          }
+        </ng-template>
+        <ng-template rsFilterDef let-value let-commit="commit">
+          <div class="rs-select-wrap rs-select-wrap--block">
+            <select class="rs-select" (change)="commit($any($event.target).value || null)">
+              <option value="" [selected]="!value">Alle</option>
+              @for (option of vm.typeFilterOptions; track option.value) {
+                <option [value]="option.value" [selected]="option.value === value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+          </div>
+        </ng-template>
+      </rs-table-column>
+      <rs-table-column key="product" header="Artikel" [width]="140" filterType="custom">
+        <ng-template rsFilterDef let-value let-commit="commit">
+          <div class="rs-select-wrap rs-select-wrap--block">
+            <select class="rs-select" (change)="commit($any($event.target).value || null)">
+              <option value="" [selected]="!value">Alle</option>
+              @for (option of vm.productFilterOptions(); track option.value) {
+                <option [value]="option.value" [selected]="option.value === value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+          </div>
+        </ng-template>
+      </rs-table-column>
+      <rs-table-column
+        key="note"
+        header="Notiz"
+        [flex]="2"
+        [minWidth]="160"
+        filterType="text"
+        wrap
+        [maxLines]="3"
+      />
+      <rs-table-column key="amount" header="Betrag" [width]="110" align="end" [sortable]="true">
+        <ng-template rsCellDef let-row>
+          <app-amount-display [amount]="row.amount" [struck]="row.reversed" />
+        </ng-template>
+      </rs-table-column>
+      <rs-table-column key="source" header="Herkunft" [width]="110" />
+      <rs-table-column key="recordedBy" header="Erfasst von" [width]="120" />
+      <rs-table-column key="actions" header="" [width]="130" [resizable]="false">
+        <ng-template rsCellDef let-row>
+          @if (row.canReverse) {
+            <button
+              type="button"
+              class="rs-btn rs-btn--outline rs-btn--red rs-btn--sm"
+              [attr.aria-label]="'Stornieren: ' + row.summary"
+              (click)="vm.askReversal(row)"
+            >
+              Stornieren
+            </button>
+          }
+        </ng-template>
+      </rs-table-column>
+    </rs-table>
+  </section>
+</div>
+
+<app-reversal-dialog [dialog]="vm.reversal" />

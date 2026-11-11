@@ -1,0 +1,18 @@
+:host {
+  display: block;
+}
+
+.book-page__balance {
+  margin-block-end: var(--rs-space-5);
+}
+
+.book-page__status {
+  color: var(--rs-text-dim);
+}
+
+// Große Kacheln: auf dem Handy zwei Spalten, auf breiten Bildschirmen mehr (NF-01).
+.book-page__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--rs-space-3);
+}

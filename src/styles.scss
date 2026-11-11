@@ -1,0 +1,23 @@
+/*
+ * Globale Styles der Kaffeekasse. Widgets, Farben und Abstände kommen aus
+ * custom-components (Theme relaxed-coffee, siehe angular.json); hier steht nur,
+ * was alle Seiten gemeinsam brauchen. Nur var(--rs-*)-Tokens, keine Farben.
+ */
+
+html {
+  // Sprungziele nicht unter der Sticky-Kopfzeile verstecken.
+  scroll-padding-top: 8rem;
+}
+
+body {
+  margin: 0;
+}
+
+/* Seitenüberschrift (h1) jeder Seite. */
+.app-page-title {
+  margin: 0 0 var(--rs-space-4);
+  font-family: var(--rs-font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--rs-text);
+}

@@ -1,0 +1,301 @@
+<div class="admin-page">
+  <div class="admin-page__columns">
+    <section class="rs-card" aria-labelledby="cash-expense-title">
+      <header class="rs-card__header">
+        <h2 class="rs-card__title" id="cash-expense-title">Ausgabe erfassen</h2>
+        <p class="rs-card__subtitle">Wareneinkauf aus der Kasse oder Auslage durch eine Person</p>
+      </header>
+      <form class="admin-form" [formRoot]="vm.expenseForm">
+        <div class="rs-card__body admin-form__fields">
+          <app-labeled-field
+            fieldId="expense-date"
+            label="Belegdatum"
+            [group]="true"
+            [state]="vm.expenseForm.bookingDate()"
+          >
+            <rs-datepicker
+              [formField]="vm.expenseForm.bookingDate"
+              [maxDate]="vm.latestBookingDate()"
+            />
+          </app-labeled-field>
+          <app-labeled-field
+            fieldId="expense-amount"
+            label="Betrag (€)"
+            [state]="vm.expenseForm.amount()"
+          >
+            <input
+              id="expense-amount"
+              class="rs-input"
+              inputmode="decimal"
+              placeholder="24,90"
+              aria-describedby="expense-amount-hint"
+              [formField]="vm.expenseForm.amount"
+            />
+          </app-labeled-field>
+          <app-labeled-field
+            fieldId="expense-note"
+            label="Beschreibung"
+            [state]="vm.expenseForm.note()"
+          >
+            <input
+              id="expense-note"
+              class="rs-input"
+              placeholder="z. B. Kaffeebohnen 2 kg"
+              aria-describedby="expense-note-hint"
+              [formField]="vm.expenseForm.note"
+            />
+          </app-labeled-field>
+          <app-labeled-field fieldId="expense-category" label="Kategorie">
+            <div class="rs-select-wrap rs-select-wrap--block">
+              <select id="expense-category" class="rs-select" [formField]="vm.expenseForm.category">
+                @for (option of vm.categoryOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </app-labeled-field>
+          <app-labeled-field fieldId="expense-paid-from" label="Bezahlt aus">
+            <div class="rs-select-wrap rs-select-wrap--block">
+              <select
+                id="expense-paid-from"
+                class="rs-select"
+                [formField]="vm.expenseForm.paidFrom"
+              >
+                @for (option of vm.paidFromOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </app-labeled-field>
+          @if (vm.isOutOfPocket()) {
+            <app-labeled-field
+              fieldId="expense-person"
+              label="Ausgelegt von"
+              hint="Die Person bekommt den Betrag als Guthaben; die Kasse ändert sich nicht."
+              [state]="vm.expenseForm.outOfPocketBy()"
+            >
+              <div class="rs-select-wrap rs-select-wrap--block">
+                <select
+                  id="expense-person"
+                  class="rs-select"
+                  aria-describedby="expense-person-hint"
+                  [formField]="vm.expenseForm.outOfPocketBy"
+                >
+                  <option value="">Bitte wählen</option>
+                  @for (option of vm.personOptions(); track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+            </app-labeled-field>
+          }
+        </div>
+        <footer class="rs-card__footer">
+          <button
+            type="submit"
+            class="rs-btn rs-btn--filled rs-btn--green"
+            [disabled]="vm.expenseForm().submitting()"
+          >
+            Ausgabe erfassen
+          </button>
+        </footer>
+      </form>
+    </section>
+
+    <section class="rs-card" aria-labelledby="cash-refund-title">
+      <header class="rs-card__header">
+        <h2 class="rs-card__title" id="cash-refund-title">Pfandrückgabe erfassen</h2>
+      </header>
+      <form class="admin-form" [formRoot]="vm.refundForm">
+        <div class="rs-card__body admin-form__fields">
+          <app-labeled-field
+            fieldId="refund-date"
+            label="Datum"
+            [group]="true"
+            [state]="vm.refundForm.bookingDate()"
+          >
+            <rs-datepicker
+              [formField]="vm.refundForm.bookingDate"
+              [maxDate]="vm.latestBookingDate()"
+            />
+          </app-labeled-field>
+          <app-labeled-field
+            fieldId="refund-amount"
+            label="Betrag (€)"
+            [state]="vm.refundForm.amount()"
+          >
+            <input
+              id="refund-amount"
+              class="rs-input"
+              inputmode="decimal"
+              placeholder="3,00"
+              aria-describedby="refund-amount-hint"
+              [formField]="vm.refundForm.amount"
+            />
+          </app-labeled-field>
+          <app-labeled-field
+            fieldId="refund-note"
+            label="Beschreibung"
+            [state]="vm.refundForm.note()"
+          >
+            <input
+              id="refund-note"
+              class="rs-input"
+              placeholder="z. B. 12 Leergut-Flaschen"
+              aria-describedby="refund-note-hint"
+              [formField]="vm.refundForm.note"
+            />
+          </app-labeled-field>
+          <app-labeled-field fieldId="refund-method" label="Zahlungsweg">
+            <div class="rs-select-wrap rs-select-wrap--block">
+              <select
+                id="refund-method"
+                class="rs-select"
+                [formField]="vm.refundForm.paymentMethod"
+              >
+                @for (option of vm.paymentMethodOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </app-labeled-field>
+        </div>
+        <footer class="rs-card__footer">
+          <button
+            type="submit"
+            class="rs-btn rs-btn--filled rs-btn--green"
+            [disabled]="vm.refundForm().submitting()"
+          >
+            Pfandrückgabe erfassen
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+
+  <section class="rs-card" aria-labelledby="cash-book-title">
+    <header class="rs-card__header">
+      <h2 class="rs-card__title" id="cash-book-title">Kassenbuch</h2>
+      <p class="rs-card__subtitle">
+        Alle Buchungen mit Kassenwirkung plus Auslagen, neueste zuerst.
+      </p>
+    </header>
+    <rs-table
+      [fetchData]="vm.loadCashBook"
+      [pageSizeOptions]="[10, 20, 50]"
+      [pageSize]="20"
+      [rowClass]="rowClass"
+      label="Kassenbuch"
+    >
+      <rs-table-column
+        key="date"
+        header="Datum"
+        [width]="230"
+        [sortable]="true"
+        filterType="datetime-range"
+      />
+      <rs-table-column
+        key="type"
+        header="Art"
+        [width]="200"
+        [sortable]="true"
+        filterType="custom"
+        wrap
+      >
+        <ng-template rsCellDef let-row>
+          <span class="rs-badge" [class]="row.typeTone | statusClass: 'rs-badge'">{{
+            row.type
+          }}</span>
+          @if (row.reversed) {
+            <span class="rs-badge rs-badge--neutral">storniert</span>
+          }
+        </ng-template>
+        <ng-template rsFilterDef let-value let-commit="commit">
+          <div class="rs-select-wrap rs-select-wrap--block">
+            <select class="rs-select" (change)="commit($any($event.target).value || null)">
+              <option value="" [selected]="!value">Alle</option>
+              @for (option of vm.typeFilterOptions; track option.value) {
+                <option [value]="option.value" [selected]="option.value === value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+          </div>
+        </ng-template>
+      </rs-table-column>
+      <rs-table-column
+        key="note"
+        header="Beschreibung / Notiz"
+        [flex]="2"
+        [minWidth]="180"
+        filterType="text"
+        wrap
+        [maxLines]="3"
+      />
+      <rs-table-column key="category" header="Kategorie" [width]="150" />
+      <rs-table-column key="paymentMethod" header="Zahlungsweg" [width]="150" />
+      <rs-table-column key="amount" header="Betrag" [width]="110" align="end" [sortable]="true">
+        <ng-template rsCellDef let-row>
+          <app-amount-display [amount]="row.amount" [struck]="row.reversed" />
+        </ng-template>
+      </rs-table-column>
+      <rs-table-column key="actions" header="" [width]="130" [resizable]="false">
+        <ng-template rsCellDef let-row>
+          @if (row.canReverse) {
+            <button
+              type="button"
+              class="rs-btn rs-btn--outline rs-btn--red rs-btn--sm"
+              [attr.aria-label]="'Stornieren: ' + row.summary"
+              (click)="vm.askReversal(row)"
+            >
+              Stornieren
+            </button>
+          }
+        </ng-template>
+      </rs-table-column>
+    </rs-table>
+  </section>
+
+  <section class="rs-card" aria-labelledby="cash-settings-title">
+    <header class="rs-card__header">
+      <h2 class="rs-card__title" id="cash-settings-title">Einstellungen</h2>
+      <p class="rs-card__subtitle">Zahlungsinformationen, wie sie unter „Mein Konto“ erscheinen</p>
+    </header>
+    <form class="admin-form" [formRoot]="vm.paymentInfoForm">
+      <div class="rs-card__body admin-form__fields">
+        <app-labeled-field fieldId="settings-holder" label="Kontoinhaber:in">
+          <input
+            id="settings-holder"
+            class="rs-input"
+            [formField]="vm.paymentInfoForm.accountHolder"
+          />
+        </app-labeled-field>
+        <app-labeled-field fieldId="settings-iban" label="IBAN">
+          <input id="settings-iban" class="rs-input" [formField]="vm.paymentInfoForm.iban" />
+        </app-labeled-field>
+        <app-labeled-field fieldId="settings-paypal" label="PayPal-Link">
+          <input
+            id="settings-paypal"
+            class="rs-input"
+            type="url"
+            [formField]="vm.paymentInfoForm.paypalLink"
+          />
+        </app-labeled-field>
+        <app-labeled-field fieldId="settings-cash" label="Hinweis zur Barzahlung">
+          <input id="settings-cash" class="rs-input" [formField]="vm.paymentInfoForm.cashNote" />
+        </app-labeled-field>
+      </div>
+      <footer class="rs-card__footer">
+        <button
+          type="submit"
+          class="rs-btn rs-btn--filled rs-btn--green"
+          [disabled]="vm.paymentInfoForm().submitting()"
+        >
+          Speichern
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
+
+<app-reversal-dialog [dialog]="vm.reversal" />

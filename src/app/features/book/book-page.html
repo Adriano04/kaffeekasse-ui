@@ -1,0 +1,49 @@
+@if (vm.signedOut()) {
+  <div class="rs-callout rs-callout--neutral">
+    <div class="rs-callout__body">Bitte melde dich an, um zu buchen.</div>
+  </div>
+} @else {
+  <section class="rs-card rs-card--compact book-page__balance" aria-label="Kontostand">
+    @if (vm.balance(); as balance) {
+      <div class="rs-stat rs-stat--inline" [class]="balance.tone | statusClass: 'rs-stat'">
+        <span class="rs-stat__label">Kontostand von {{ vm.personName() }}</span>
+        <span class="rs-stat__value">{{ balance.text }}</span>
+        <span class="rs-stat__hint">{{ balance.hint }}</span>
+      </div>
+    } @else {
+      <div class="rs-stat rs-stat--inline">
+        <span class="rs-stat__label">Kontostand von {{ vm.personName() }}</span>
+        <span class="rs-stat__hint">wird geladen …</span>
+      </div>
+    }
+  </section>
+
+  <h1 class="app-page-title">Getränk wählen</h1>
+
+  @if (vm.loadError(); as message) {
+    <div class="rs-callout rs-callout--crit" role="alert">
+      <div class="rs-callout__body">{{ message }}</div>
+      <div class="rs-callout__actions">
+        <button
+          type="button"
+          class="rs-btn rs-btn--outline rs-btn--red rs-btn--sm"
+          (click)="vm.retry()"
+        >
+          Erneut versuchen
+        </button>
+      </div>
+    </div>
+  } @else if (vm.loading()) {
+    <p class="book-page__status" role="status">Artikel werden geladen …</p>
+  } @else if (vm.empty()) {
+    <div class="rs-callout rs-callout--neutral">
+      <div class="rs-callout__body">Zurzeit gibt es keine Artikel zum Buchen.</div>
+    </div>
+  }
+
+  <div class="book-page__tiles">
+    @for (tile of vm.tiles(); track tile.id) {
+      <app-product-tile [tile]="tile" (selected)="vm.bookProduct(tile.id)" />
+    }
+  </div>
+}

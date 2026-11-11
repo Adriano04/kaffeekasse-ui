@@ -1,0 +1,74 @@
+// Gemeinsames Layout der Bereiche in der Verwaltung.
+:host {
+  display: block;
+}
+
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-4);
+}
+
+.admin-form__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--rs-space-3);
+}
+
+.admin-form__note {
+  margin-block-start: var(--rs-space-3);
+}
+
+.admin-actions {
+  display: flex;
+  gap: var(--rs-space-2);
+}
+
+.admin-page__note {
+  margin: var(--rs-space-3) 0 0;
+  font-size: 0.8rem;
+  color: var(--rs-text-dim);
+}
+
+.admin-page__variants {
+  margin-block-end: var(--rs-space-3);
+  overflow-x: auto;
+}
+
+.admin-dialog__question {
+  font-weight: 700;
+}
+
+// Zwei Karten nebeneinander, auf schmalen Bildschirmen untereinander.
+.admin-page__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+  gap: var(--rs-space-4);
+  align-items: start;
+}
+
+// Kennzahl-Kacheln der Statistik.
+.admin-page__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--rs-space-4);
+  align-items: start;
+
+  .rs-card {
+    gap: var(--rs-space-3);
+  }
+}
+
+.admin-page__details {
+  summary {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: var(--rs-text-dim);
+  }
+
+  .rs-item-list {
+    margin-block-start: var(--rs-space-2);
+  }
+}

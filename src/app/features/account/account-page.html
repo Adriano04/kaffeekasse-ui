@@ -1,0 +1,143 @@
+<h1 class="app-page-title">Mein Konto</h1>
+
+@if (vm.signedOut()) {
+  <div class="rs-callout rs-callout--neutral">
+    <div class="rs-callout__body">Bitte melde dich an, um dein Konto zu sehen.</div>
+  </div>
+} @else {
+  <div class="account-page">
+    @if (vm.loadError(); as message) {
+      <div class="rs-callout rs-callout--crit" role="alert">
+        <div class="rs-callout__body">{{ message }}</div>
+        <div class="rs-callout__actions">
+          <button
+            type="button"
+            class="rs-btn rs-btn--outline rs-btn--red rs-btn--sm"
+            (click)="vm.retry()"
+          >
+            Erneut versuchen
+          </button>
+        </div>
+      </div>
+    }
+
+    <section class="rs-card" aria-label="Kontostand">
+      @if (vm.balance(); as balance) {
+        <div class="rs-stat rs-stat--lg" [class]="balance.tone | statusClass: 'rs-stat'">
+          <span class="rs-stat__label">Aktueller Stand</span>
+          <span class="rs-stat__value">{{ balance.text }}</span>
+          <span class="rs-stat__hint">{{ balance.hint }}</span>
+        </div>
+      } @else {
+        <div class="rs-stat rs-stat--lg">
+          <span class="rs-stat__label">Aktueller Stand</span>
+          <span class="rs-stat__hint">wird geladen …</span>
+        </div>
+      }
+    </section>
+
+    @if (vm.paymentHint(); as hint) {
+      <div class="rs-callout rs-callout--warn">
+        <p class="rs-callout__title">Bitte Kontostand ausgleichen</p>
+        <div class="rs-callout__body">
+          Dein Kontostand ist {{ hint.balance }}. Zahle am besten {{ hint.suggestedPayment }},
+          {{ hint.outcome }}. Wie du bezahlst, steht unten bei „Bezahlen“.
+        </div>
+      </div>
+    }
+
+    <section class="rs-card" aria-labelledby="account-history-title">
+      <header class="rs-card__header">
+        <h2 class="rs-card__title" id="account-history-title">Verlauf</h2>
+        <p class="rs-card__subtitle">{{ vm.period() }}</p>
+      </header>
+      <ul class="rs-item-list" aria-labelledby="account-history-title">
+        @for (entry of vm.entries(); track entry.id) {
+          <li class="rs-item-list__item" [class.rs-item-list__item--muted]="entry.reversed">
+            <div class="rs-item-list__main">
+              <span class="rs-item-list__title">
+                <span class="rs-badge" [class]="entry.labelTone | statusClass: 'rs-badge'">
+                  {{ entry.label }}
+                </span>
+                @if (entry.reversed) {
+                  <span class="rs-badge rs-badge--neutral">storniert</span>
+                }
+              </span>
+              <span class="rs-item-list__meta">{{ entry.date }}</span>
+              @if (entry.details) {
+                <span class="rs-item-list__meta">{{ entry.details }}</span>
+              }
+            </div>
+            <div class="rs-item-list__trailing">
+              <span class="rs-item-list__value">
+                <app-amount-display [amount]="entry.amount" [struck]="entry.reversed" />
+              </span>
+              @if (entry.balanceAfter) {
+                <span class="rs-item-list__sub">{{ entry.balanceAfter }}</span>
+              }
+            </div>
+            @if (entry.canUndo) {
+              <div class="rs-item-list__actions">
+                <button
+                  type="button"
+                  class="rs-btn rs-btn--outline rs-btn--yellow rs-btn--sm account-page__undo"
+                  [attr.aria-label]="entry.undoLabel"
+                  [disabled]="vm.undoPending()"
+                  (click)="vm.undo(entry.id)"
+                >
+                  Rückgängig
+                </button>
+              </div>
+            }
+          </li>
+        } @empty {
+          <li class="rs-item-list__empty">{{ vm.emptyMessage() }}</li>
+        }
+      </ul>
+      @if (vm.hasOlder()) {
+        <div class="rs-item-list__footer">
+          <button
+            type="button"
+            class="rs-btn rs-btn--outline rs-btn--grey rs-btn--sm"
+            [disabled]="vm.loadingOlder()"
+            (click)="vm.loadOlder()"
+          >
+            {{ vm.loadOlderLabel() }}
+          </button>
+        </div>
+      }
+    </section>
+
+    @if (vm.paymentInfo(); as info) {
+      <section class="rs-card" aria-labelledby="account-payment-title">
+        <header class="rs-card__header">
+          <h2 class="rs-card__title" id="account-payment-title">Bezahlen</h2>
+        </header>
+        <dl class="rs-card__body account-page__payment">
+          <dt>Bar</dt>
+          <dd>{{ info.cashNote }}</dd>
+          @if (info.iban) {
+            <dt>Überweisung</dt>
+            <dd>
+              <span class="account-page__payment-line"
+                >Kontoinhaber:in: {{ info.accountHolder }}</span
+              >
+              <span class="account-page__payment-line">IBAN: {{ info.iban }}</span>
+              <span class="account-page__payment-line">
+                Verwendungszweck: {{ info.paymentReference }}
+              </span>
+            </dd>
+          }
+          @if (info.paypalLink) {
+            <dt>PayPal</dt>
+            <dd>
+              <a [href]="info.paypalLink" target="_blank" rel="noopener noreferrer">
+                {{ info.paypalLink }}
+              </a>
+            </dd>
+          }
+        </dl>
+      </section>
+    }
+  </div>
+}

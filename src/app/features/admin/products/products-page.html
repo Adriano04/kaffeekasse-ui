@@ -1,0 +1,233 @@
+<div class="admin-page">
+  <section class="rs-card" aria-labelledby="products-create-title">
+    <header class="rs-card__header">
+      <h2 class="rs-card__title" id="products-create-title">Artikel hinzufügen</h2>
+    </header>
+    <form class="admin-form" [formRoot]="vm.createForm">
+      <div class="rs-card__body admin-form__fields">
+        <app-labeled-field fieldId="product-name" label="Name" [state]="vm.createForm.name()">
+          <input
+            id="product-name"
+            class="rs-input"
+            placeholder="z. B. Kakao"
+            aria-describedby="product-name-hint"
+            [formField]="vm.createForm.name"
+          />
+        </app-labeled-field>
+        <app-labeled-field
+          fieldId="product-price"
+          label="Preis (€)"
+          [state]="vm.createForm.price()"
+        >
+          <input
+            id="product-price"
+            class="rs-input"
+            inputmode="decimal"
+            placeholder="0,80"
+            aria-describedby="product-price-hint"
+            [formField]="vm.createForm.price"
+          />
+        </app-labeled-field>
+      </div>
+      <footer class="rs-card__footer">
+        <button
+          type="submit"
+          class="rs-btn rs-btn--filled rs-btn--green"
+          [disabled]="vm.createForm().submitting()"
+        >
+          Hinzufügen
+        </button>
+      </footer>
+    </form>
+  </section>
+
+  <section class="rs-card" aria-labelledby="products-list-title">
+    <header class="rs-card__header">
+      <h2 class="rs-card__title" id="products-list-title">{{ vm.listTitle() }}</h2>
+      <p class="rs-card__subtitle">In dieser Reihenfolge erscheinen sie auf der Buchungsseite.</p>
+    </header>
+    @if (vm.loadError(); as message) {
+      <div class="rs-callout rs-callout--crit" role="alert">
+        <div class="rs-callout__body">{{ message }}</div>
+      </div>
+    }
+    @if (vm.loading()) {
+      <p class="admin-page__note" role="status">Artikel werden geladen …</p>
+    } @else {
+      <rs-table [data]="vm.rows()" [rowClass]="rowClass" label="Artikel">
+        <rs-table-column key="name" header="Name" [flex]="2" [minWidth]="120" />
+        <rs-table-column key="currentPrice" header="Preis" [width]="90" align="end" />
+        <rs-table-column key="announcedPrice" header="Angekündigt" [flex]="1" [minWidth]="150">
+          <ng-template rsCellDef let-row>{{ row.announcedPrice ?? '–' }}</ng-template>
+        </rs-table-column>
+        <rs-table-column key="status" header="Status" [width]="90">
+          <ng-template rsCellDef let-row>
+            <span class="rs-badge" [class]="row.active ? 'rs-badge--ok' : 'rs-badge--neutral'">
+              {{ row.statusLabel }}
+            </span>
+          </ng-template>
+        </rs-table-column>
+        <rs-table-column key="actions" header="Aktionen" [width]="430" [resizable]="false">
+          <ng-template rsCellDef let-row>
+            <div class="admin-actions">
+              <button
+                type="button"
+                class="rs-btn rs-btn--outline rs-btn--yellow rs-btn--sm"
+                [attr.aria-label]="'Preis für ' + row.name + ' ändern'"
+                (click)="vm.startPriceChange(row.id)"
+              >
+                Preis ändern
+              </button>
+              <button
+                type="button"
+                class="rs-btn rs-btn--outline rs-btn--grey rs-btn--sm"
+                [attr.aria-label]="'Preisverlauf von ' + row.name"
+                (click)="vm.showPriceHistory(row.id)"
+              >
+                Verlauf
+              </button>
+              <button
+                type="button"
+                class="rs-btn rs-btn--outline rs-btn--grey rs-btn--sm"
+                [disabled]="!row.canMoveUp || vm.pending()"
+                [attr.aria-label]="row.name + ' nach oben verschieben'"
+                (click)="vm.move(row.id, 'UP')"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                class="rs-btn rs-btn--outline rs-btn--grey rs-btn--sm"
+                [disabled]="!row.canMoveDown || vm.pending()"
+                [attr.aria-label]="row.name + ' nach unten verschieben'"
+                (click)="vm.move(row.id, 'DOWN')"
+              >
+                ↓
+              </button>
+              @if (row.active) {
+                <button
+                  type="button"
+                  class="rs-btn rs-btn--outline rs-btn--red rs-btn--sm"
+                  [disabled]="vm.pending()"
+                  [attr.aria-label]="row.name + ' deaktivieren'"
+                  (click)="vm.setActive(row.id, false)"
+                >
+                  Deaktivieren
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="rs-btn rs-btn--outline rs-btn--green rs-btn--sm"
+                  [disabled]="vm.pending()"
+                  [attr.aria-label]="row.name + ' aktivieren'"
+                  (click)="vm.setActive(row.id, true)"
+                >
+                  Aktivieren
+                </button>
+              }
+            </div>
+          </ng-template>
+        </rs-table-column>
+      </rs-table>
+    }
+    <p class="admin-page__note">
+      Artikel werden nicht gelöscht: Deaktivierte Artikel verschwinden von der Buchungsseite,
+      bleiben aber in Historie und Statistik.
+    </p>
+  </section>
+</div>
+
+<rs-modal
+  [open]="vm.priceChange() !== null"
+  (openChange)="vm.cancelPriceChange()"
+  [title]="'Preis ändern: ' + vm.priceChange()?.name"
+  variant="confirm"
+>
+  <form class="rs-modal__body admin-form" [formRoot]="vm.priceForm">
+    @if (vm.confirmation(); as question) {
+      <p class="admin-dialog__question">{{ question }}</p>
+      <p class="admin-page__note">Bereits gebuchte Getränke behalten ihren Preis.</p>
+      <div class="rs-modal__actions">
+        <button
+          type="button"
+          class="rs-btn rs-btn--outline rs-btn--grey"
+          (click)="vm.editPriceAgain()"
+        >
+          Zurück
+        </button>
+        <button
+          type="submit"
+          class="rs-btn rs-btn--filled rs-btn--green"
+          [disabled]="vm.priceForm().submitting()"
+        >
+          Preis speichern
+        </button>
+      </div>
+    } @else {
+      <p>Aktueller Preis: {{ vm.priceChange()?.currentPrice }}</p>
+      <app-labeled-field
+        fieldId="price-amount"
+        label="Neuer Preis (€)"
+        [state]="vm.priceForm.amount()"
+      >
+        <input
+          id="price-amount"
+          class="rs-input"
+          inputmode="decimal"
+          aria-describedby="price-amount-hint"
+          [formField]="vm.priceForm.amount"
+        />
+      </app-labeled-field>
+      <app-labeled-field
+        fieldId="price-valid-from"
+        label="Gültig ab"
+        hint="Standard: sofort. Ein späteres Datum kündigt den Preis an."
+        [group]="true"
+        [state]="vm.priceForm.validFrom()"
+      >
+        <rs-datepicker [formField]="vm.priceForm.validFrom" [minDate]="vm.earliestValidFrom()" />
+      </app-labeled-field>
+      <div class="rs-modal__actions">
+        <button
+          type="button"
+          class="rs-btn rs-btn--outline rs-btn--grey"
+          (click)="vm.cancelPriceChange()"
+        >
+          Abbrechen
+        </button>
+        <button type="submit" class="rs-btn rs-btn--filled rs-btn--yellow">Prüfen</button>
+      </div>
+    }
+  </form>
+</rs-modal>
+
+<rs-modal
+  [open]="vm.priceHistory() !== null"
+  (openChange)="vm.closePriceHistory()"
+  [title]="'Preisverlauf: ' + vm.priceHistory()?.name"
+>
+  @if (vm.priceHistory(); as history) {
+    <ul class="rs-item-list rs-modal__body" aria-label="Preisverlauf">
+      @for (entry of history.entries; track entry.validFrom) {
+        <li class="rs-item-list__item">
+          <div class="rs-item-list__main">
+            <span class="rs-item-list__title">ab {{ entry.validFrom }}</span>
+          </div>
+          <div class="rs-item-list__trailing">
+            <span class="rs-item-list__value">{{ entry.price }}</span>
+            <span class="rs-item-list__sub">{{ entry.status }}</span>
+          </div>
+        </li>
+      }
+    </ul>
+    <div class="rs-modal__actions">
+      <button
+        type="button"
+        class="rs-btn rs-btn--outline rs-btn--grey"
+        (click)="vm.closePriceHistory()"
+      >
+        Schließen
+      </button>
+    </div>
+  }
+</rs-modal>

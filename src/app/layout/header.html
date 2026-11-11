@@ -1,0 +1,39 @@
+<header class="rs-app-bar rs-app-bar--sticky rs-app-bar--lift app-header">
+  <a class="rs-app-bar__skip-link" href="#content" (click)="skipToContent($event)">
+    Zum Inhalt springen
+  </a>
+  <div class="rs-app-bar__title-group">
+    <a class="rs-app-bar__title" routerLink="/book">
+      <span aria-hidden="true">☕</span> {{ vm.title() }}
+    </a>
+    @if (vm.subtitle()) {
+      <span class="rs-app-bar__subtitle">{{ vm.subtitle() }}</span>
+    }
+  </div>
+  <nav class="rs-app-bar__nav app-header__nav" aria-label="Hauptnavigation">
+    @for (link of vm.links(); track link.path) {
+      <a
+        class="rs-app-bar__link app-header__link"
+        [routerLink]="link.path"
+        routerLinkActive
+        ariaCurrentWhenActive="page"
+      >
+        {{ link.label }}
+      </a>
+    }
+  </nav>
+  <div class="rs-app-bar__actions">
+    <button
+      type="button"
+      class="rs-btn rs-btn--outline rs-btn--grey rs-btn--sm app-header__control"
+      [attr.aria-label]="vm.themeToggle().ariaLabel"
+      (click)="vm.toggleTheme()"
+    >
+      <span aria-hidden="true">{{ vm.themeToggle().icon }}</span>
+      {{ vm.themeToggle().label }}
+    </button>
+  </div>
+  @if (vm.showPersonSwitcher) {
+    <app-person-switcher class="app-header__prototype" />
+  }
+</header>

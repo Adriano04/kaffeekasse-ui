@@ -1,0 +1,103 @@
+<div class="admin-page">
+  @if (vm.loadError(); as message) {
+    <div class="rs-callout rs-callout--crit" role="alert">
+      <div class="rs-callout__body">{{ message }}</div>
+      <div class="rs-callout__actions">
+        <button
+          type="button"
+          class="rs-btn rs-btn--outline rs-btn--red rs-btn--sm"
+          (click)="vm.retry()"
+        >
+          Erneut versuchen
+        </button>
+      </div>
+    </div>
+  } @else if (vm.loading()) {
+    <p class="admin-page__note" role="status">Kennzahlen werden geladen …</p>
+  }
+
+  <div class="admin-page__metrics">
+    @if (vm.receivables(); as receivables) {
+      <section class="rs-card" aria-label="Offene Forderungen">
+        <div class="rs-stat rs-stat--crit">
+          <span class="rs-stat__label">Offene Forderungen</span>
+          <span class="rs-stat__value">{{ receivables.total }}</span>
+          <span class="rs-stat__hint">offen, inklusive inaktiver Personen</span>
+        </div>
+        @if (receivables.people.length > 0) {
+          <details class="admin-page__details">
+            <summary>{{ receivables.toggleLabel }}</summary>
+            <ul class="rs-item-list" aria-label="Personen mit offenem Betrag">
+              @for (person of receivables.people; track person.id) {
+                <li class="rs-item-list__item" [class.rs-item-list__item--muted]="person.inactive">
+                  <div class="rs-item-list__main">
+                    <span class="rs-item-list__title">
+                      {{ person.name }}
+                      @if (person.inactive) {
+                        <span class="rs-badge rs-badge--neutral">inaktiv</span>
+                      }
+                    </span>
+                  </div>
+                  <div class="rs-item-list__trailing">
+                    <span class="rs-item-list__value">{{ person.amount }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      </section>
+    }
+
+    @if (vm.credit(); as credit) {
+      <section class="rs-card" aria-label="Guthaben der Belegschaft">
+        <div class="rs-stat rs-stat--ok">
+          <span class="rs-stat__label">Guthaben der Belegschaft</span>
+          <span class="rs-stat__value">{{ credit.total }}</span>
+          <span class="rs-stat__hint">Guthaben, inklusive inaktiver Personen</span>
+        </div>
+        <div class="rs-callout rs-callout--neutral">
+          <div class="rs-callout__body">{{ vm.creditNote }}</div>
+        </div>
+        @if (credit.people.length > 0) {
+          <details class="admin-page__details">
+            <summary>{{ credit.toggleLabel }}</summary>
+            <ul class="rs-item-list" aria-label="Personen mit Guthaben">
+              @for (person of credit.people; track person.id) {
+                <li class="rs-item-list__item" [class.rs-item-list__item--muted]="person.inactive">
+                  <div class="rs-item-list__main">
+                    <span class="rs-item-list__title">
+                      {{ person.name }}
+                      @if (person.inactive) {
+                        <span class="rs-badge rs-badge--neutral">inaktiv</span>
+                      }
+                    </span>
+                  </div>
+                  <div class="rs-item-list__trailing">
+                    <span class="rs-item-list__value">{{ person.amount }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      </section>
+    }
+
+    @if (vm.cashBalance(); as cash) {
+      <section class="rs-card" aria-label="Kassenbestand">
+        <div class="rs-stat rs-stat--neutral rs-stat--lg">
+          <span class="rs-stat__label">Kassenbestand</span>
+          <span class="rs-stat__value">{{ cash.total }}</span>
+          <span class="rs-stat__hint">geschätzt</span>
+        </div>
+        @for (method of cash.byMethod; track method.label) {
+          <div class="rs-stat rs-stat--inline rs-stat--neutral">
+            <span class="rs-stat__label">{{ method.label }}</span>
+            <span class="rs-stat__value">{{ method.amount }}</span>
+          </div>
+        }
+      </section>
+    }
+  </div>
+</div>

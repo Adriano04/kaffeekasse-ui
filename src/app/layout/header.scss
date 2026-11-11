@@ -1,0 +1,38 @@
+// Ohne eigene Box, damit die Sticky-Kopfzeile am Dokument klebt und nicht am Host.
+:host {
+  display: contents;
+}
+
+// Touch-Flächen der Navigation mindestens 48 px hoch (NF-01).
+.app-header__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+@media (pointer: coarse) {
+  .app-header__control {
+    min-height: 48px;
+  }
+}
+
+// Personenauswahl des Prototyps als eigene Zeile unter der Leiste.
+.app-header__prototype {
+  order: 2;
+  flex-basis: 100%;
+}
+
+// Schmale Bildschirme: Titel und Umschalter oben, Navigation darunter über die ganze Breite.
+// Die Kopfzeile scrollt mit, weil sie mit drei Zeilen sonst ein Viertel des Bildschirms belegt.
+@media (max-width: 40rem) {
+  .app-header {
+    position: relative;
+  }
+
+  .app-header__nav {
+    order: 1;
+    flex-basis: 100%;
+    justify-content: space-between;
+  }
+}

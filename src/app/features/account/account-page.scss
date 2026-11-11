@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+
+.account-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-4);
+  max-width: 48rem;
+}
+
+.account-page__payment {
+  display: grid;
+  grid-template-columns: minmax(6rem, max-content) minmax(0, 1fr);
+  gap: var(--rs-space-2) var(--rs-space-4);
+  margin: 0;
+
+  dt {
+    font-weight: 700;
+    color: var(--rs-text);
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--rs-text-dim);
+  }
+
+  a {
+    color: var(--rs-green);
+  }
+}
+
+.account-page__payment-line {
+  display: block;
+}
+
+@media (pointer: coarse) {
+  .account-page__undo {
+    min-height: 48px;
+  }
+}
+
+// Sehr schmale Bildschirme: Bezeichnung über dem Wert.
+@media (max-width: 24rem) {
+  .account-page__payment {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--rs-space-1);
+
+    dd {
+      margin-block-end: var(--rs-space-2);
+    }
+  }
+}

@@ -1,0 +1,20 @@
+// Seitengerüst: Fußzeile bleibt bei wenig Inhalt unten.
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.app-main {
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: var(--rs-space-4);
+
+  // Fokus nach dem Sprunglink ohne Rahmen um den ganzen Inhalt.
+  &:focus {
+    outline: none;
+  }
+}

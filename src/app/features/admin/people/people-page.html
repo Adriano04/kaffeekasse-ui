@@ -1,0 +1,257 @@
+<div class="admin-page">
+  <section class="rs-card" aria-labelledby="people-create-title">
+    <header class="rs-card__header">
+      <h2 class="rs-card__title" id="people-create-title">Person hinzufügen</h2>
+    </header>
+    <form class="admin-form" [formRoot]="vm.createForm">
+      <div class="rs-card__body admin-form__fields">
+        <app-labeled-field
+          fieldId="person-display-name"
+          label="Anzeigename"
+          [state]="vm.createForm.displayName()"
+        >
+          <input
+            id="person-display-name"
+            class="rs-input"
+            placeholder="z. B. Sandra Berg"
+            aria-describedby="person-display-name-hint"
+            [formField]="vm.createForm.displayName"
+          />
+        </app-labeled-field>
+        <app-labeled-field
+          fieldId="person-username"
+          label="Benutzername"
+          [state]="vm.createForm.username()"
+        >
+          <input
+            id="person-username"
+            class="rs-input"
+            autocomplete="off"
+            placeholder="z. B. sberg"
+            aria-describedby="person-username-hint"
+            [formField]="vm.createForm.username"
+          />
+        </app-labeled-field>
+        <app-labeled-field
+          fieldId="person-email"
+          label="E-Mail (optional)"
+          [state]="vm.createForm.email()"
+        >
+          <input
+            id="person-email"
+            class="rs-input"
+            type="email"
+            aria-describedby="person-email-hint"
+            [formField]="vm.createForm.email"
+          />
+        </app-labeled-field>
+      </div>
+      <div class="rs-callout rs-callout--neutral admin-form__note">
+        <div class="rs-callout__body">
+          Benutzerkonto und Initialpasswort entstehen später in Keycloak, sobald die App angebunden
+          ist. Im Prototyp gibt es keine Passwörter.
+        </div>
+      </div>
+      <footer class="rs-card__footer">
+        <button
+          type="submit"
+          class="rs-btn rs-btn--filled rs-btn--green"
+          [disabled]="vm.createForm().submitting()"
+        >
+          Hinzufügen
+        </button>
+      </footer>
+    </form>
+  </section>
+
+  <section class="rs-card" aria-labelledby="people-list-title">
+    <header class="rs-card__header">
+      <h2 class="rs-card__title" id="people-list-title">{{ vm.listTitle() }}</h2>
+    </header>
+    @if (vm.loadError(); as message) {
+      <div class="rs-callout rs-callout--crit" role="alert">
+        <div class="rs-callout__body">{{ message }}</div>
+      </div>
+    }
+    @if (vm.loading()) {
+      <p class="admin-page__note" role="status">Personen werden geladen …</p>
+    } @else {
+      <rs-table [data]="vm.rows()" [rowClass]="rowClass" label="Personen">
+        <rs-table-column key="name" header="Name" [flex]="2" [minWidth]="120" />
+        <rs-table-column key="username" header="Benutzername" [flex]="1" [minWidth]="140" />
+        <rs-table-column key="balance" header="Kontostand" [width]="120" align="end">
+          <ng-template rsCellDef let-row>
+            <app-amount-display [amount]="row.balance" />
+          </ng-template>
+        </rs-table-column>
+        <rs-table-column key="status" header="Status" [width]="90">
+          <ng-template rsCellDef let-row>
+            <span class="rs-badge" [class]="row.active ? 'rs-badge--ok' : 'rs-badge--neutral'">
+              {{ row.statusLabel }}
+            </span>
+          </ng-template>
+        </rs-table-column>
+        <rs-table-column key="role" header="Rolle" [width]="110">
+          <ng-template rsCellDef let-row>
+            @if (row.isAdmin) {
+              <span class="rs-badge rs-badge--warn">Verwaltung</span>
+            }
+          </ng-template>
+        </rs-table-column>
+        <rs-table-column key="actions" header="Aktionen" [width]="390" [resizable]="false">
+          <ng-template rsCellDef let-row>
+            <div class="admin-actions">
+              <button
+                type="button"
+                class="rs-btn rs-btn--outline rs-btn--grey rs-btn--sm"
+                [attr.aria-label]="row.name + ' bearbeiten'"
+                (click)="vm.startEdit(row.id)"
+              >
+                Bearbeiten
+              </button>
+              @if (row.active) {
+                <button
+                  type="button"
+                  class="rs-btn rs-btn--outline rs-btn--red rs-btn--sm"
+                  [disabled]="row.deactivateBlocker !== null || vm.pending()"
+                  [attr.title]="row.deactivateBlocker"
+                  [attr.aria-label]="row.name + ' deaktivieren'"
+                  (click)="vm.askDeactivate(row.id)"
+                >
+                  Deaktivieren
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="rs-btn rs-btn--outline rs-btn--green rs-btn--sm"
+                  [disabled]="vm.pending()"
+                  [attr.aria-label]="row.name + ' reaktivieren'"
+                  (click)="vm.reactivate(row.id)"
+                >
+                  Reaktivieren
+                </button>
+              }
+              @if (row.isAdmin) {
+                <button
+                  type="button"
+                  class="rs-btn rs-btn--outline rs-btn--yellow rs-btn--sm"
+                  [disabled]="row.revokeBlocker !== null || vm.pending()"
+                  [attr.title]="row.revokeBlocker"
+                  [attr.aria-label]="'Rolle Verwaltung für ' + row.name + ' entziehen'"
+                  (click)="vm.setAdminRole(row.id, false)"
+                >
+                  Rolle entziehen
+                </button>
+              } @else if (row.canGrantAdmin) {
+                <button
+                  type="button"
+                  class="rs-btn rs-btn--outline rs-btn--yellow rs-btn--sm"
+                  [disabled]="vm.pending()"
+                  [attr.aria-label]="'Rolle Verwaltung an ' + row.name + ' vergeben'"
+                  (click)="vm.setAdminRole(row.id, true)"
+                >
+                  Rolle vergeben
+                </button>
+              }
+            </div>
+          </ng-template>
+        </rs-table-column>
+      </rs-table>
+    }
+    <p class="admin-page__note">
+      Inaktive Personen können sich nicht anmelden; ihre Historie bleibt erhalten, und ein offener
+      Betrag oder Guthaben zählt weiter zur Statistik.
+    </p>
+  </section>
+</div>
+
+<rs-modal
+  [open]="vm.editing() !== null"
+  (openChange)="vm.cancelEdit()"
+  [title]="'Person bearbeiten: ' + vm.editing()"
+>
+  <form class="rs-modal__body admin-form" [formRoot]="vm.editForm">
+    <app-labeled-field
+      fieldId="edit-display-name"
+      label="Anzeigename"
+      [state]="vm.editForm.displayName()"
+    >
+      <input
+        id="edit-display-name"
+        class="rs-input"
+        aria-describedby="edit-display-name-hint"
+        [formField]="vm.editForm.displayName"
+      />
+    </app-labeled-field>
+    <app-labeled-field fieldId="edit-email" label="E-Mail (optional)" [state]="vm.editForm.email()">
+      <input
+        id="edit-email"
+        class="rs-input"
+        type="email"
+        aria-describedby="edit-email-hint"
+        [formField]="vm.editForm.email"
+      />
+    </app-labeled-field>
+    <div class="rs-modal__actions">
+      <button type="button" class="rs-btn rs-btn--outline rs-btn--grey" (click)="vm.cancelEdit()">
+        Abbrechen
+      </button>
+      <button
+        type="submit"
+        class="rs-btn rs-btn--filled rs-btn--green"
+        [disabled]="vm.editForm().submitting()"
+      >
+        Speichern
+      </button>
+    </div>
+  </form>
+</rs-modal>
+
+<rs-modal
+  [open]="vm.deactivation() !== null"
+  (openChange)="vm.cancelDeactivate()"
+  [title]="'Person deaktivieren: ' + vm.deactivation()?.name"
+  variant="confirm"
+>
+  @if (vm.deactivation(); as dialog) {
+    <div class="rs-modal__body admin-dialog">
+      <p>
+        {{ dialog.name }} kann sich danach nicht mehr anmelden. Die Historie bleibt erhalten, eine
+        Reaktivierung ist jederzeit möglich.
+      </p>
+      @if (dialog.settlement; as settlement) {
+        <div class="rs-callout rs-callout--warn">
+          <p class="rs-callout__title">Schlussabrechnung</p>
+          <div class="rs-callout__body">{{ settlement.message }}</div>
+          @if (settlement.offerPayout) {
+            <div class="rs-callout__actions">
+              <button
+                type="button"
+                class="rs-btn rs-btn--outline rs-btn--yellow rs-btn--sm"
+                (click)="vm.goToPayout()"
+              >
+                Zur Auszahlung
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <div class="rs-modal__actions">
+      <button
+        type="button"
+        class="rs-btn rs-btn--outline rs-btn--grey"
+        (click)="vm.cancelDeactivate()"
+      >
+        Abbrechen
+      </button>
+      <button
+        type="button"
+        class="rs-btn rs-btn--filled rs-btn--red"
+        (click)="vm.confirmDeactivate()"
+      >
+        Deaktivieren
+      </button>
+    </div>
+  }
+</rs-modal>
